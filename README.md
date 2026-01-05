@@ -1,2 +1,5 @@
-# TorontoRaccoonStation
-for script play in toronto, booking ios/android platform
+# Toronto Raccoon Station
+for scripted roleplay in toronto, booking ios/android platform
+
+UI in Chinese, code in English. 
+
