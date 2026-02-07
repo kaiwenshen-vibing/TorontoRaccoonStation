@@ -1,0 +1,8 @@
+Single-database Alembic environment for the store-first scheduler MVP.
+
+Commands:
+  alembic revision -m "message"
+  alembic upgrade head
+  alembic downgrade -1
+
+`DATABASE_URL` is loaded from environment first, then `.env`.
