@@ -7,9 +7,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     database_url: str
+    redis_url: str | None = None
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()
-

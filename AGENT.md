@@ -223,3 +223,9 @@ All user-facing text fields must support Chinese input.
 - Current forward migration for match model: `0002_booking_match_model`.
 - As new ground-truth model evolves (e.g. `booking_client`, `character_client_match`, `character_dm_match`), add forward migrations or resquash before production lock.
 - Keep schema and AGENT ground truth aligned at all times.
+
+## 10. Readiness Checks
+
+- `/healthz` is liveness only (no dependencies).
+- `/ready` verifies DB and Redis connectivity and returns 503 if either is missing or down.
+- Required env vars for `/ready`: `DATABASE_URL`, `REDIS_URL`.

@@ -78,6 +78,13 @@ def get_script_service(
     return ScriptService(session=session)
 
 
+def get_global_script_service(
+    _actor: ActorContext = Depends(get_actor_context),
+    session: AsyncSession = Depends(get_async_session),
+) -> ScriptService:
+    return ScriptService(session=session)
+
+
 def get_character_client_match_service(
     _actor: ActorContext = Depends(require_store_access),
     session: AsyncSession = Depends(get_async_session),
@@ -90,4 +97,3 @@ def get_character_dm_match_service(
     session: AsyncSession = Depends(get_async_session),
 ) -> CharacterDmMatchService:
     return CharacterDmMatchService(session=session)
-
