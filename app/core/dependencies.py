@@ -8,6 +8,7 @@ from app.services.booking_service import BookingService
 from app.services.character_client_match_service import CharacterClientMatchService
 from app.services.character_dm_match_service import CharacterDmMatchService
 from app.services.room_service import RoomService
+from app.services.script_character_service import ScriptCharacterService
 from app.services.script_service import ScriptService
 from app.services.slot_service import SlotService
 
@@ -83,6 +84,13 @@ def get_global_script_service(
     session: AsyncSession = Depends(get_async_session),
 ) -> ScriptService:
     return ScriptService(session=session)
+
+
+def get_script_character_service(
+    _actor: ActorContext = Depends(get_actor_context),
+    session: AsyncSession = Depends(get_async_session),
+) -> ScriptCharacterService:
+    return ScriptCharacterService(session=session)
 
 
 def get_character_client_match_service(

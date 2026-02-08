@@ -185,6 +185,8 @@ If any older doc conflicts with this file, this file wins.
 - `GET/POST/PATCH/DELETE /api/v1/stores/{store_id}/slots...`
 - `GET/POST/PATCH /api/v1/stores/{store_id}/rooms...`
 - `GET /api/v1/stores/{store_id}/scripts` (respect `store_script.is_active`)
+- `GET/POST/PATCH/DELETE /api/v1/scripts` (global scripts)
+- `GET/POST/PATCH/DELETE /api/v1/scripts/{script_id}/characters`
 
 ## 6. Service Architecture Ground Truth
 
