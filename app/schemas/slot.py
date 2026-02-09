@@ -1,4 +1,4 @@
-from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
 
 class CreateSlotRequest(BaseModel):
@@ -7,6 +7,12 @@ class CreateSlotRequest(BaseModel):
 
 class UpdateSlotRequest(BaseModel):
     start_at: AwareDatetime | None = None
+
+    @model_validator(mode="after")
+    def validate_changes(self) -> "UpdateSlotRequest":
+        if self.start_at is None:
+            raise ValueError("At least one field must be provided.")
+        return self
 
 
 class SlotItem(BaseModel):
@@ -20,4 +26,3 @@ class SlotListResponse(BaseModel):
     limit: int
     offset: int
     total: int
-
