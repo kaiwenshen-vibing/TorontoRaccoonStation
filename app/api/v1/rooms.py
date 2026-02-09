@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.core.dependencies import get_room_service
 from app.schemas.room import CreateRoomRequest, RoomItem, RoomListResponse, UpdateRoomRequest
@@ -39,3 +39,12 @@ async def update_room(
         payload=payload,
     )
 
+
+@router.delete("/{store_room_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_room(
+    store_id: int,
+    store_room_id: int,
+    service: RoomService = Depends(get_room_service),
+) -> Response:
+    await service.delete_room(store_id=store_id, store_room_id=store_room_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
