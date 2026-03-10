@@ -27,7 +27,7 @@ class ScriptCharacterService(BaseService):
         items_result = await self.session.execute(
             text(
                 """
-                SELECT character_id, script_id, character_name, is_dm, is_active
+                SELECT character_id, script_id, character_name, is_dm, is_active, pic_storage_key
                 FROM script_character
                 WHERE script_id = :script_id
                 ORDER BY updated_at DESC, character_id DESC
@@ -54,9 +54,21 @@ class ScriptCharacterService(BaseService):
                 result = await self.session.execute(
                     text(
                         """
-                        INSERT INTO script_character (script_id, character_name, is_dm, is_active)
-                        VALUES (:script_id, :character_name, :is_dm, :is_active)
-                        RETURNING character_id, script_id, character_name, is_dm, is_active
+                        INSERT INTO script_character (
+                            script_id,
+                            character_name,
+                            is_dm,
+                            is_active,
+                            pic_storage_key
+                        )
+                        VALUES (:script_id, :character_name, :is_dm, :is_active, :pic_storage_key)
+                        RETURNING
+                            character_id,
+                            script_id,
+                            character_name,
+                            is_dm,
+                            is_active,
+                            pic_storage_key
                         """
                     ),
                     {"script_id": script_id, **payload.model_dump()},
@@ -70,7 +82,7 @@ class ScriptCharacterService(BaseService):
         result = await self.session.execute(
             text(
                 """
-                SELECT character_id, script_id, character_name, is_dm, is_active
+                SELECT character_id, script_id, character_name, is_dm, is_active, pic_storage_key
                 FROM script_character
                 WHERE script_id = :script_id
                   AND character_id = :character_id
@@ -93,22 +105,31 @@ class ScriptCharacterService(BaseService):
     ) -> ScriptCharacterItem:
         values = {"script_id": script_id, "character_id": character_id}
         updates = []
-        if payload.character_name is not None:
+        if "character_name" in payload.model_fields_set:
             updates.append("character_name = :character_name")
             values["character_name"] = payload.character_name
-        if payload.is_dm is not None:
+        if "is_dm" in payload.model_fields_set:
             updates.append("is_dm = :is_dm")
             values["is_dm"] = payload.is_dm
-        if payload.is_active is not None:
+        if "is_active" in payload.model_fields_set:
             updates.append("is_active = :is_active")
             values["is_active"] = payload.is_active
+        if "pic_storage_key" in payload.model_fields_set:
+            updates.append("pic_storage_key = :pic_storage_key")
+            values["pic_storage_key"] = payload.pic_storage_key
         updates.append("updated_at = now()")
         query = f"""
             UPDATE script_character
             SET {", ".join(updates)}
             WHERE script_id = :script_id
               AND character_id = :character_id
-            RETURNING character_id, script_id, character_name, is_dm, is_active
+            RETURNING
+                character_id,
+                script_id,
+                character_name,
+                is_dm,
+                is_active,
+                pic_storage_key
         """
         try:
             async with self.session.begin():

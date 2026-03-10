@@ -5,12 +5,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_async_session
 from app.services.booking_service import BookingService
+from app.services.client_service import ClientService
 from app.services.character_client_match_service import CharacterClientMatchService
 from app.services.character_dm_match_service import CharacterDmMatchService
+from app.services.dm_service import DmService
 from app.services.room_service import RoomService
 from app.services.script_character_service import ScriptCharacterService
 from app.services.script_service import ScriptService
 from app.services.slot_service import SlotService
+from app.services.store_service import StoreService
 
 
 @dataclass(slots=True)
@@ -91,6 +94,34 @@ def get_script_character_service(
     session: AsyncSession = Depends(get_async_session),
 ) -> ScriptCharacterService:
     return ScriptCharacterService(session=session)
+
+
+def get_store_service(
+    _actor: ActorContext = Depends(get_actor_context),
+    session: AsyncSession = Depends(get_async_session),
+) -> StoreService:
+    return StoreService(session=session)
+
+
+def get_scoped_store_service(
+    _actor: ActorContext = Depends(require_store_access),
+    session: AsyncSession = Depends(get_async_session),
+) -> StoreService:
+    return StoreService(session=session)
+
+
+def get_client_service(
+    _actor: ActorContext = Depends(get_actor_context),
+    session: AsyncSession = Depends(get_async_session),
+) -> ClientService:
+    return ClientService(session=session)
+
+
+def get_dm_service(
+    _actor: ActorContext = Depends(get_actor_context),
+    session: AsyncSession = Depends(get_async_session),
+) -> DmService:
+    return DmService(session=session)
 
 
 def get_character_client_match_service(

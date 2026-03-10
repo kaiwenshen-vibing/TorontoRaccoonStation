@@ -79,6 +79,7 @@ async def test_list_script_characters_returns_items():
                         "character_name": "Host",
                         "is_dm": True,
                         "is_active": True,
+                        "pic_storage_key": "scripts/2/chars/host.webp",
                     }
                 ]
             ),
@@ -91,6 +92,7 @@ async def test_list_script_characters_returns_items():
 
     assert response.total == 1
     assert response.items[0].character_name == "Host"
+    assert response.items[0].pic_storage_key == "scripts/2/chars/host.webp"
 
 
 @pytest.mark.asyncio
@@ -109,7 +111,10 @@ async def test_create_script_character_script_missing():
 async def test_create_script_character_conflict():
     session = FakeSession([FakeResult(scalar_or_none=1)])
     session.execute = AsyncMock(
-        side_effect=IntegrityError("stmt", {}, Exception("unique")),
+        side_effect=[
+            FakeResult(scalar_or_none=1),
+            IntegrityError("stmt", {}, Exception("unique")),
+        ],
     )
     session.begin = lambda: FakeBegin()
     service = ScriptCharacterService(session=session)
@@ -122,12 +127,70 @@ async def test_create_script_character_conflict():
 
 
 @pytest.mark.asyncio
+async def test_create_script_character_returns_pic_storage_key():
+    session = FakeSession(
+        [
+            FakeResult(scalar_or_none=1),
+            FakeResult(
+                rows=[
+                    {
+                        "character_id": 1,
+                        "script_id": 2,
+                        "character_name": "Host",
+                        "is_dm": True,
+                        "is_active": True,
+                        "pic_storage_key": "scripts/2/chars/host.webp",
+                    }
+                ]
+            ),
+        ]
+    )
+    service = ScriptCharacterService(session=session)
+
+    item = await service.create_script_character(
+        script_id=2,
+        payload=CreateScriptCharacterRequest(
+            character_name="Host",
+            is_dm=True,
+            pic_storage_key="scripts/2/chars/host.webp",
+        ),
+    )
+
+    assert item.pic_storage_key == "scripts/2/chars/host.webp"
+
+
+@pytest.mark.asyncio
 async def test_get_script_character_not_found():
     session = FakeSession([FakeResult(rows=[])])
     service = ScriptCharacterService(session=session)
 
     with pytest.raises(NotFoundError):
         await service.get_script_character(script_id=2, character_id=10)
+
+
+@pytest.mark.asyncio
+async def test_get_script_character_returns_pic_storage_key():
+    session = FakeSession(
+        [
+            FakeResult(
+                rows=[
+                    {
+                        "character_id": 10,
+                        "script_id": 2,
+                        "character_name": "Host",
+                        "is_dm": True,
+                        "is_active": True,
+                        "pic_storage_key": "scripts/2/chars/host.webp",
+                    }
+                ]
+            )
+        ]
+    )
+    service = ScriptCharacterService(session=session)
+
+    item = await service.get_script_character(script_id=2, character_id=10)
+
+    assert item.pic_storage_key == "scripts/2/chars/host.webp"
 
 
 @pytest.mark.asyncio
@@ -158,6 +221,38 @@ async def test_update_script_character_conflict():
             character_id=10,
             payload=UpdateScriptCharacterRequest(character_name="New"),
         )
+
+
+@pytest.mark.asyncio
+async def test_update_script_character_can_set_and_clear_pic_storage_key():
+    session = FakeSession(
+        [
+            FakeResult(
+                rows=[
+                    {
+                        "character_id": 10,
+                        "script_id": 2,
+                        "character_name": "Host",
+                        "is_dm": True,
+                        "is_active": True,
+                        "pic_storage_key": None,
+                    }
+                ]
+            )
+        ]
+    )
+    service = ScriptCharacterService(session=session)
+
+    item = await service.update_script_character(
+        script_id=2,
+        character_id=10,
+        payload=UpdateScriptCharacterRequest(pic_storage_key=None),
+    )
+
+    assert item.pic_storage_key is None
+    _, params = session.execute_calls[0]
+    assert "pic_storage_key" in params
+    assert params["pic_storage_key"] is None
 
 
 @pytest.mark.asyncio

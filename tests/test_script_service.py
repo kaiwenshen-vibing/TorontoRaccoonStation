@@ -65,8 +65,18 @@ async def test_list_scripts_returns_items_and_total():
         [
             FakeResult(
                 rows=[
-                    {"script_id": 1, "name": "Haunted Mansion", "estimated_minutes": 180},
-                    {"script_id": 2, "name": "Midnight Train", "estimated_minutes": 240},
+                    {
+                        "script_id": 1,
+                        "name": "Haunted Mansion",
+                        "estimated_minutes": 180,
+                        "pic_storage_key": "scripts/1/cover.webp",
+                    },
+                    {
+                        "script_id": 2,
+                        "name": "Midnight Train",
+                        "estimated_minutes": 240,
+                        "pic_storage_key": None,
+                    },
                 ]
             ),
             FakeResult(scalar=2),
@@ -79,6 +89,7 @@ async def test_list_scripts_returns_items_and_total():
     assert response.total == 2
     assert len(response.items) == 2
     assert response.items[0].script_id == 1
+    assert response.items[0].pic_storage_key == "scripts/1/cover.webp"
 
 
 @pytest.mark.asyncio
@@ -104,6 +115,35 @@ async def test_create_script_conflict():
 
 
 @pytest.mark.asyncio
+async def test_create_script_returns_pic_storage_key():
+    session = FakeSession(
+        [
+            FakeResult(
+                rows=[
+                    {
+                        "script_id": 9,
+                        "name": "New Script",
+                        "estimated_minutes": 90,
+                        "pic_storage_key": "scripts/9/cover.webp",
+                    }
+                ]
+            )
+        ]
+    )
+    service = ScriptService(session=session)
+
+    item = await service.create_script(
+        CreateScriptRequest(
+            name="New Script",
+            estimated_minutes=90,
+            pic_storage_key="scripts/9/cover.webp",
+        )
+    )
+
+    assert item.pic_storage_key == "scripts/9/cover.webp"
+
+
+@pytest.mark.asyncio
 async def test_update_script_not_found():
     session = FakeSession([FakeResult(rows=[])])
     service = ScriptService(session=session)
@@ -123,6 +163,61 @@ async def test_update_script_conflict():
 
     with pytest.raises(ConflictError):
         await service.update_script(1, UpdateScriptRequest(name="Dup"))
+
+
+@pytest.mark.asyncio
+async def test_update_script_updates_pic_storage_key():
+    session = FakeSession(
+        [
+            FakeResult(
+                rows=[
+                    {
+                        "script_id": 1,
+                        "name": "Haunted Mansion",
+                        "estimated_minutes": 180,
+                        "pic_storage_key": "scripts/1/new-cover.webp",
+                    }
+                ]
+            )
+        ]
+    )
+    service = ScriptService(session=session)
+
+    item = await service.update_script(
+        1,
+        UpdateScriptRequest(pic_storage_key="scripts/1/new-cover.webp"),
+    )
+
+    assert item.pic_storage_key == "scripts/1/new-cover.webp"
+
+
+@pytest.mark.asyncio
+async def test_update_script_can_clear_pic_storage_key():
+    session = FakeSession(
+        [
+            FakeResult(
+                rows=[
+                    {
+                        "script_id": 1,
+                        "name": "Haunted Mansion",
+                        "estimated_minutes": 180,
+                        "pic_storage_key": None,
+                    }
+                ]
+            )
+        ]
+    )
+    service = ScriptService(session=session)
+
+    item = await service.update_script(
+        1,
+        UpdateScriptRequest(pic_storage_key=None),
+    )
+
+    assert item.pic_storage_key is None
+    _, params = session.execute_calls[0]
+    assert "pic_storage_key" in params
+    assert params["pic_storage_key"] is None
 
 
 @pytest.mark.asyncio
@@ -181,6 +276,7 @@ async def test_list_store_scripts_returns_items():
                         "script_id": 1,
                         "name": "Haunted Mansion",
                         "estimated_minutes": 180,
+                        "pic_storage_key": "scripts/1/cover.webp",
                         "is_active": True,
                     }
                 ]
@@ -194,6 +290,7 @@ async def test_list_store_scripts_returns_items():
 
     assert response.total == 1
     assert response.items[0].is_active is True
+    assert response.items[0].pic_storage_key == "scripts/1/cover.webp"
 
 
 @pytest.mark.asyncio
@@ -248,6 +345,7 @@ async def test_create_store_script_success():
                         "script_id": 3,
                         "name": "New Script",
                         "estimated_minutes": 120,
+                        "pic_storage_key": "scripts/3/cover.webp",
                         "is_active": True,
                     }
                 ]
@@ -260,6 +358,7 @@ async def test_create_store_script_success():
 
     assert item.script_id == 3
     assert item.is_active is True
+    assert item.pic_storage_key == "scripts/3/cover.webp"
 
 
 @pytest.mark.asyncio
@@ -286,6 +385,7 @@ async def test_update_store_script_success():
                         "script_id": 3,
                         "name": "New Script",
                         "estimated_minutes": 120,
+                        "pic_storage_key": "scripts/3/cover.webp",
                         "is_active": False,
                     }
                 ]
@@ -301,6 +401,7 @@ async def test_update_store_script_success():
     )
 
     assert item.is_active is False
+    assert item.pic_storage_key == "scripts/3/cover.webp"
 
 
 @pytest.mark.asyncio

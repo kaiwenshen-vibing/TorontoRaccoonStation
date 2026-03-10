@@ -20,7 +20,7 @@ class ScriptService(BaseService):
         items_result = await self.session.execute(
             text(
                 """
-                SELECT script_id, name, estimated_minutes
+                SELECT script_id, name, estimated_minutes, pic_storage_key
                 FROM script
                 ORDER BY updated_at DESC, script_id DESC
                 LIMIT :limit
@@ -38,7 +38,7 @@ class ScriptService(BaseService):
         result = await self.session.execute(
             text(
                 """
-                SELECT script_id, name, estimated_minutes
+                SELECT script_id, name, estimated_minutes, pic_storage_key
                 FROM script
                 WHERE script_id = :script_id
                 """
@@ -56,9 +56,9 @@ class ScriptService(BaseService):
                 result = await self.session.execute(
                     text(
                         """
-                        INSERT INTO script (name, estimated_minutes)
-                        VALUES (:name, :estimated_minutes)
-                        RETURNING script_id, name, estimated_minutes
+                        INSERT INTO script (name, estimated_minutes, pic_storage_key)
+                        VALUES (:name, :estimated_minutes, :pic_storage_key)
+                        RETURNING script_id, name, estimated_minutes, pic_storage_key
                         """
                     ),
                     payload.model_dump(),
@@ -71,18 +71,21 @@ class ScriptService(BaseService):
     async def update_script(self, script_id: int, payload: UpdateScriptRequest) -> ScriptItem:
         values = {"script_id": script_id}
         updates = []
-        if payload.name is not None:
+        if "name" in payload.model_fields_set:
             updates.append("name = :name")
             values["name"] = payload.name
-        if payload.estimated_minutes is not None:
+        if "estimated_minutes" in payload.model_fields_set:
             updates.append("estimated_minutes = :estimated_minutes")
             values["estimated_minutes"] = payload.estimated_minutes
+        if "pic_storage_key" in payload.model_fields_set:
+            updates.append("pic_storage_key = :pic_storage_key")
+            values["pic_storage_key"] = payload.pic_storage_key
         updates.append("updated_at = now()")
         query = f"""
             UPDATE script
             SET {", ".join(updates)}
             WHERE script_id = :script_id
-            RETURNING script_id, name, estimated_minutes
+            RETURNING script_id, name, estimated_minutes, pic_storage_key
         """
         try:
             async with self.session.begin():
@@ -147,7 +150,7 @@ class ScriptService(BaseService):
         items_result = await self.session.execute(
             text(
                 """
-                SELECT s.script_id, s.name, s.estimated_minutes, ss.is_active
+                SELECT s.script_id, s.name, s.estimated_minutes, s.pic_storage_key, ss.is_active
                 FROM store_script AS ss
                 JOIN script AS s ON s.script_id = ss.script_id
                 WHERE ss.store_id = :store_id
@@ -217,7 +220,7 @@ class ScriptService(BaseService):
             result = await self.session.execute(
                 text(
                     """
-                    SELECT s.script_id, s.name, s.estimated_minutes, ss.is_active
+                    SELECT s.script_id, s.name, s.estimated_minutes, s.pic_storage_key, ss.is_active
                     FROM store_script AS ss
                     JOIN script AS s ON s.script_id = ss.script_id
                     WHERE ss.store_id = :store_id
@@ -254,7 +257,7 @@ class ScriptService(BaseService):
             item_result = await self.session.execute(
                 text(
                     """
-                    SELECT s.script_id, s.name, s.estimated_minutes, ss.is_active
+                    SELECT s.script_id, s.name, s.estimated_minutes, s.pic_storage_key, ss.is_active
                     FROM store_script AS ss
                     JOIN script AS s ON s.script_id = ss.script_id
                     WHERE ss.store_id = :store_id

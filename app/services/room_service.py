@@ -20,7 +20,7 @@ class RoomService(BaseService):
         items_result = await self.session.execute(
             text(
                 """
-                SELECT store_room_id, store_id, name, is_active
+                SELECT store_room_id, store_id, name, is_active, pic_storage_key
                 FROM store_room
                 WHERE store_id = :store_id
                 ORDER BY updated_at DESC, store_room_id DESC
@@ -45,9 +45,9 @@ class RoomService(BaseService):
                 result = await self.session.execute(
                     text(
                         """
-                        INSERT INTO store_room (store_id, name)
-                        VALUES (:store_id, :name)
-                        RETURNING store_room_id, store_id, name, is_active
+                        INSERT INTO store_room (store_id, name, pic_storage_key)
+                        VALUES (:store_id, :name, :pic_storage_key)
+                        RETURNING store_room_id, store_id, name, is_active, pic_storage_key
                         """
                     ),
                     {"store_id": store_id, **payload.model_dump()},
@@ -65,19 +65,22 @@ class RoomService(BaseService):
     ) -> RoomItem:
         values = {"store_id": store_id, "store_room_id": store_room_id}
         updates = []
-        if payload.name is not None:
+        if "name" in payload.model_fields_set:
             updates.append("name = :name")
             values["name"] = payload.name
-        if payload.is_active is not None:
+        if "is_active" in payload.model_fields_set:
             updates.append("is_active = :is_active")
             values["is_active"] = payload.is_active
+        if "pic_storage_key" in payload.model_fields_set:
+            updates.append("pic_storage_key = :pic_storage_key")
+            values["pic_storage_key"] = payload.pic_storage_key
         updates.append("updated_at = now()")
         query = f"""
             UPDATE store_room
             SET {", ".join(updates)}
             WHERE store_id = :store_id
               AND store_room_id = :store_room_id
-            RETURNING store_room_id, store_id, name, is_active
+            RETURNING store_room_id, store_id, name, is_active, pic_storage_key
         """
         try:
             async with self.session.begin():

@@ -7,6 +7,7 @@ class ScriptCharacterItem(BaseModel):
     character_name: str
     is_dm: bool
     is_active: bool
+    pic_storage_key: str | None = None
 
 
 class ScriptCharacterListResponse(BaseModel):
@@ -20,15 +21,17 @@ class CreateScriptCharacterRequest(BaseModel):
     character_name: str = Field(min_length=1)
     is_dm: bool = False
     is_active: bool = True
+    pic_storage_key: str | None = None
 
 
 class UpdateScriptCharacterRequest(BaseModel):
     character_name: str | None = Field(default=None, min_length=1)
     is_dm: bool | None = None
     is_active: bool | None = None
+    pic_storage_key: str | None = None
 
     @model_validator(mode="after")
     def validate_changes(self) -> "UpdateScriptCharacterRequest":
-        if self.character_name is None and self.is_dm is None and self.is_active is None:
+        if not self.model_fields_set:
             raise ValueError("At least one field must be provided.")
         return self

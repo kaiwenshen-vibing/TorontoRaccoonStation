@@ -5,6 +5,7 @@ class ScriptItem(BaseModel):
     script_id: int
     name: str
     estimated_minutes: int
+    pic_storage_key: str | None = None
 
 
 class ScriptListResponse(BaseModel):
@@ -17,15 +18,17 @@ class ScriptListResponse(BaseModel):
 class CreateScriptRequest(BaseModel):
     name: str = Field(min_length=1)
     estimated_minutes: int = Field(ge=1)
+    pic_storage_key: str | None = None
 
 
 class UpdateScriptRequest(BaseModel):
     name: str | None = Field(default=None, min_length=1)
     estimated_minutes: int | None = Field(default=None, ge=1)
+    pic_storage_key: str | None = None
 
     @model_validator(mode="after")
     def validate_changes(self) -> "UpdateScriptRequest":
-        if self.name is None and self.estimated_minutes is None:
+        if not self.model_fields_set:
             raise ValueError("At least one field must be provided.")
         return self
 
@@ -34,6 +37,7 @@ class StoreScriptItem(BaseModel):
     script_id: int
     name: str
     estimated_minutes: int
+    pic_storage_key: str | None = None
     is_active: bool
 
 

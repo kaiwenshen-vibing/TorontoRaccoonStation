@@ -65,11 +65,11 @@ If any older doc conflicts with this file, this file wins.
 ## 3. Data Model Ground Truth (Target)
 
 ## 3.1 `store`
-- `store_id`, `name`, timestamps
+- `store_id`, `name`, `pic_storage_key`, timestamps
 - No `timezone` column
 
 ## 3.2 `store_room`
-- `store_room_id`, `store_id`, `name`, `is_active`, timestamps
+- `store_room_id`, `store_id`, `name`, `is_active`, `pic_storage_key`, timestamps
 - Unique: `(store_id, name)`
 - Operational expectation: each store keeps at least one active room
 
@@ -79,23 +79,23 @@ If any older doc conflicts with this file, this file wins.
 - Reusable across multiple bookings
 
 ## 3.4 `script` (global)
-- `script_id`, `name`, `estimated_minutes`, timestamps
+- `script_id`, `name`, `estimated_minutes`, `pic_storage_key`, timestamps
 
 ## 3.5 `store_script`
 - `store_id`, `script_id`, `is_active`, timestamps
 - One script can map to many stores; each store controls `is_active`
 
 ## 3.6 `script_character`
-- `character_id`, `script_id`, `character_name`, `is_dm`, `is_active`, timestamps
+- `character_id`, `script_id`, `character_name`, `is_dm`, `is_active`, `pic_storage_key`, timestamps
 - Unique: `(script_id, character_name)`
 
 ## 3.7 `dm` and `dm_store_membership`
-- `dm`: global DM profile (`dm_id`, `display_name`, `is_active`, timestamps)
+- `dm`: global DM profile (`dm_id`, `display_name`, `is_active`, `pic_storage_key`, timestamps)
 - `dm_store_membership`: (`dm_id`, `store_id`) membership table
 - Same DM can belong to multiple stores
 
 ## 3.8 `client` (global)
-- `client_id`, `display_name`, `phone`, timestamps
+- `client_id`, `display_name`, `phone`, `pic_storage_key`, timestamps
 
 ## 3.9 `booking_status` (lookup)
 - `booking_status_id`, `booking_status_name`
@@ -172,16 +172,20 @@ If any older doc conflicts with this file, this file wins.
 - `POST /api/v1/stores/{store_id}/bookings/{booking_id}/complete`
 
 ### 5.3 Client and Match APIs
+- `GET/POST/PATCH/DELETE /api/v1/clients`
 - `POST /api/v1/stores/{store_id}/bookings/{booking_id}/clients`
 - `DELETE /api/v1/stores/{store_id}/bookings/{booking_id}/clients/{client_id}`
 - `POST /api/v1/stores/{store_id}/bookings/{booking_id}/character-client-matches`
 - `PATCH /api/v1/stores/{store_id}/bookings/{booking_id}/character-client-matches/{match_id}`
 - `DELETE /api/v1/stores/{store_id}/bookings/{booking_id}/character-client-matches/{match_id}`
+- `GET/POST/PATCH/DELETE /api/v1/dms`
+- `GET/POST/DELETE /api/v1/dms/{dm_id}/stores...`
 - `POST /api/v1/stores/{store_id}/bookings/{booking_id}/character-dm-matches`
 - `PATCH /api/v1/stores/{store_id}/bookings/{booking_id}/character-dm-matches/{match_id}`
 - `DELETE /api/v1/stores/{store_id}/bookings/{booking_id}/character-dm-matches/{match_id}`
 
 ### 5.4 Slot/Room/Script APIs
+- `GET/POST/PATCH/DELETE /api/v1/stores`
 - `GET/POST/PATCH/DELETE /api/v1/stores/{store_id}/slots...`
 - `GET/POST/PATCH /api/v1/stores/{store_id}/rooms...`
 - `GET /api/v1/stores/{store_id}/scripts` (respect `store_script.is_active`)
