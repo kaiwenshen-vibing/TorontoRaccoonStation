@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 import redis.asyncio as redis
@@ -10,6 +11,16 @@ from app.core.config import get_settings
 from app.core.errors import FeatureNotImplementedError, ServiceError
 
 app = FastAPI(title="Store Scheduler API", version="0.1.0")
+settings = get_settings()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.get_cors_allowed_origins(),
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(api_router)
 
 

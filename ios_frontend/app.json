@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Toronto Raccoon Station",
+    "slug": "toronto-raccoon-station-ui",
+    "version": "1.0.0",
+    "scheme": "torontoraccoonstation",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "predictiveBackGestureEnabled": false
+    },
+    "experiments": {
+      "typedRoutes": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "name": "Toronto Raccoon Station",
+      "shortName": "Raccoon Station"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
